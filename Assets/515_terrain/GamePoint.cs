@@ -20,9 +20,9 @@ public class GamePoint : MonoBehaviour
 
 	Vector3 pointPosition ()
 	{
-		float posX = transform.position.x + Random.Range (-200, 250);
+		float posX = transform.position.x + Random.Range (-100, 100);
 		float posY = transform.position.y + 100f;
-		float posZ = transform.position.z + Random.Range (-250, 200);
+		float posZ = transform.position.z + Random.Range (-100, 100);
 		return new Vector3 (posX, posY, posZ);
 	}
 
