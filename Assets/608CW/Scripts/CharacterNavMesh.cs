@@ -10,9 +10,11 @@ public class CharacterNavMesh : MonoBehaviour
 	Ray m_RayScreen;
 	RaycastHit m_RayHit;
 	Vector3 m_TargetPoint;
+	float characterSpeed;
 
 	void Start ()
 	{
+		characterSpeed = 0;
 		m_Animator = GetComponent<Animator> ();
 		m_Agent = GetComponent<NavMeshAgent> ();
 		m_TargetPoint = transform.position;
@@ -27,5 +29,7 @@ public class CharacterNavMesh : MonoBehaviour
 			}
 		}
 		m_Agent.SetDestination (m_TargetPoint);
+
+
 	}
 }
