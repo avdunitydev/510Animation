@@ -33,81 +33,8 @@ public class LoginMain : MonoBehaviour
 		butReg.interactable = false;
 	}
 
-	public void EndEditLoginR ()
-	{
-		if (loginR.text.Length < 4) {
-			Debug.LogError ("Логін повинен містити не менше 4 символів");
-			isOk &= ~IsRegistrationOk.login;
-			IsActivBtnSignUp ();
-		} else {
-			StartCoroutine (FindName (loginR.text));
-		}
-	}
 
-	IEnumerator FindName (string signInName)
-	{
-		Debug.Log ("start find user name ...");
-		WWWForm form = new WWWForm ();
-		form.AddField ("name", signInName);
 
-		WWW www = new WWW ("http://localhost/test2.site/php/findName.php", form);
-		yield return www;
-
-		if (!string.IsNullOrEmpty (www.error)) {
-			Debug.LogError ("Error: name !" + www.error);
-			yield break;
-		}
-		Debug.Log ("... result >> " + www.text);
-		if (www.text.Length == 1) {
-			if (Equals (www.text, "1")) {
-				Debug.LogError ("Такий логін зайнятий виберіть інший");
-				isOk &= ~IsRegistrationOk.login;
-			} else if (Equals (www.text, "0")) {
-				Debug.Log ("User name OK !");
-				isOk |= IsRegistrationOk.login;
-			}
-			IsActivBtnSignUp ();
-		}
-		yield return null;
-	}
-
-	public void EndEditEmailR ()
-	{        
-		if (emailR.text.Length < 7 && !emailR.text.Contains ("@")) {
-			Debug.LogError ("Перевірте правильність написання пошти");
-			isOk &= ~IsRegistrationOk.email;
-			IsActivBtnSignUp ();
-		} else {
-			StartCoroutine (FindEmail (emailR.text));
-		}
-	}
-
-	IEnumerator FindEmail (string signInEmail)
-	{
-		Debug.Log ("start find user email ...");
-		WWWForm form = new WWWForm ();
-		form.AddField ("email", signInEmail);
-
-		WWW www = new WWW ("http://localhost/test2.site/php/findEmail.php", form);
-		yield return www;
-
-		if (!string.IsNullOrEmpty (www.error)) {
-			Debug.LogError ("Error: email !" + www.error);
-			yield break;
-		}
-		print ("... result >> " + www.text);
-		if (www.text.Length == 1) {
-			if (Equals (www.text, "1")) {
-				Debug.LogError ("Така пошта використовуєьться, виберіть іншу");
-				isOk &= ~IsRegistrationOk.email;
-			} else if (Equals (www.text, "0")) {
-				Debug.Log ("User email OK !");
-				isOk |= IsRegistrationOk.email;
-			}
-			IsActivBtnSignUp ();
-		}
-		yield return null;
-	}
 
 	public void EndEditPassWord1 ()
 	{
