@@ -19,7 +19,7 @@ public class CheckInDB : MonoBehaviour
 		rePass = 1 << 3
 	}
 
-	IsValidate isFieldOk;
+	public static IsValidate isFieldOk;
 
 	// Show Alert dialog
 	void ShowAlert (RectTransform alertPanel, Text targetText, string alertText)
@@ -28,20 +28,61 @@ public class CheckInDB : MonoBehaviour
 		alertPanel.gameObject.SetActive (true);
 	}
 	
-	// Validate field Name
-	bool ValidateName (InputField targetField)
+	// Validate fields
+	bool ValidateField (InputField targetField)
 	{
-		if (targetField.text.Length < 4) {
-			ShowAlert (alert, textAlert, "Логін повинен містити не менше 4 символів");
-			isFieldOk &= ~IsValidate.login;
-			SINPanelActivBtn (btnSIN);
+		if (Equals (targetField.name, "IF_Name")) {
+			if (targetField.text.Length < 4) {
+				ShowAlert (alert, textAlert, "Логін повинен містити не менше 4 символів");
+				//isFieldOk &= ~IsValidate.login;
+				//SINPanelActivBtn (btnSIN);
+				return false;
+			} else {
+				//SINPanelActivBtn (btnSIN);
+				return true;
+			}
+		}
+		if (Equals (targetField.name, "IF_Email")) {
+			if (targetField.text.Length < 7 && !targetField.text.Contains ("@")) {
+				ShowAlert (alert, textAlert, "Перевірте правильність написання пошти");
+				//Debug.LogError ("Перевірте правильність написання пошти");
+				//isFieldOk &= ~IsValidate.email;
+				//SINPanelActivBtn (btnSIN);
+				return false;
+			} else {
+				//SINPanelActivBtn (btnSIN);
+				return true;
+			}
+		}
+		if (Equals (targetField.name, "IF_Pass")) {
+			if (targetField.text.Length < 6) {
+				ShowAlert (alert, textAlert, "Пароль повинен містити не менше 6 символів");
+				//Debug.LogError ("Пароль повинен містити не менше 6 символів");
+				//isOk &= ~IsRegistrationOk.pswd;
+				return false;
+			} else {
+				//isFieldOk |= IsValidate.pass;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Validate pass fields
+	bool ValidateField (InputField passField, InputField rePassField)
+	{
+		if (!Equals (passField.text, rePassField.text)) {
+			ShowAlert (alert, textAlert, "Повторний пароль не збігається.\nБудьте УВАЖНІ !!!\nПовторіть спробу.");
+			//Debug.LogError ("Повторний пароль не збігається");
+			//isFieldOk &= ~IsValidate.rePass;
 			return false;
 		} else {
-			SINPanelActivBtn (btnSIN);
+			//isFieldOk |= IsValidate.rePass;
 			return true;
 		}
 		return false;
 	}
+
 	// Check name, email and interactable button
 	public void SINPanelActivBtn (Button targetButton)
 	{
@@ -51,18 +92,35 @@ public class CheckInDB : MonoBehaviour
 			targetButton.interactable = false;
 		}
 	}
+	// Check name, email, pass, re_pass and interactable button
+	public void SUPPanelActivBtn (Button targetButton)
+	{
+		if (isFieldOk == (IsValidate.email | IsValidate.login | IsValidate.pass | IsValidate.rePass)) {
+			targetButton.interactable = true;
+		} else {
+			targetButton.interactable = false;
+		}
+	}
 
 	// Check name in DB
-	public void EndEditName_IN (InputField targetField)
+	public void EndEditName (InputField targetField)
 	{
-		if (ValidateName (targetField)) {
+		if (ValidateField (targetField)) {
 			StartCoroutine (FindName (targetField.text));
 		}
+
+		/*if (ValidateField (targetField) && Equals (targetField.tag, "fieldSIN")) {
+			StartCoroutine (FindName (targetField.text));
+		} else if (ValidateField (targetField) && Equals (targetField.tag, "fieldSUP")) {
+			consoleText.text = "User name OK !";
+			isFieldOk |= IsValidate.login;
+		}*/
 	}
 
 	IEnumerator FindName (string nameSIN)
 	{
-		Debug.Log ("start find user name ...");
+		consoleText.text = "start find user name ...";
+		//Debug.Log ("start find user name ...");
 		WWWForm form = new WWWForm ();
 		form.AddField ("name", nameSIN);
 
@@ -70,16 +128,20 @@ public class CheckInDB : MonoBehaviour
 		yield return www;
 
 		if (!string.IsNullOrEmpty (www.error)) {
-			Debug.LogError ("Error: name !" + www.error);
+			consoleText.text = "Error: name !---------------------------------" + www.error;
+			//Debug.LogError ("Error: name !" + www.error);
 			yield break;
 		}
-		Debug.Log ("... result >> " + www.text);
+		consoleText.text = "... result >> " + www.text;
+		//Debug.Log ("... result >> " + www.text);
 		if (www.text.Length == 1) {
 			if (Equals (www.text, "1")) {
-				Debug.LogError ("Такий логін зайнятий виберіть інший");
+				consoleText.text = "Такий логін зайнятий виберіть інший";
+				//Debug.LogError ("Такий логін зайнятий виберіть інший");
 				isFieldOk &= ~IsValidate.login;
 			} else if (Equals (www.text, "0")) {
-				Debug.Log ("User name OK !");
+				consoleText.text = "User name OK ! ";
+				//Debug.Log ("User name OK !");
 				isFieldOk |= IsValidate.login;
 			}
 			SINPanelActivBtn (btnSIN);
@@ -88,21 +150,17 @@ public class CheckInDB : MonoBehaviour
 	}
 
 	// Check email in DB
-	public void EndEditEmail_IN (InputField targetField)
+	public void EndEditEmail (InputField targetField)
 	{        
-		if (targetField.text.Length < 7 && !targetField.text.Contains ("@")) {
-			ShowAlert (alert, textAlert, "Перевірте правильність написання пошти");
-			//Debug.LogError ("Перевірте правильність написання пошти");
-			isFieldOk &= ~IsValidate.email;
-			SINPanelActivBtn (btnSIN);
-		} else {
+		if (ValidateField (targetField)) {
 			StartCoroutine (FindEmail (targetField.text));
 		}
 	}
 
 	IEnumerator FindEmail (string emailSIN)
 	{
-		Debug.Log ("start find user email ...");
+		consoleText.text = "start find user email ...";
+		//Debug.Log ("start find user email ...");
 		WWWForm form = new WWWForm ();
 		form.AddField ("email", emailSIN);
 
@@ -110,16 +168,20 @@ public class CheckInDB : MonoBehaviour
 		yield return www;
 
 		if (!string.IsNullOrEmpty (www.error)) {
-			Debug.LogError ("Error: email !" + www.error);
+			consoleText.text = "Error: email !" + www.error;
+			//Debug.LogError ("Error: email !" + www.error);
 			yield break;
 		}
-		print ("... result >> " + www.text);
+		consoleText.text = "... result >> " + www.text;
+		//print ("... result >> " + www.text);
 		if (www.text.Length == 1) {
 			if (Equals (www.text, "1")) {
-				Debug.LogError ("Така пошта використовуєьться, виберіть іншу");
+				consoleText.text = "Така пошта використовуєьться, виберіть іншу";
+				//Debug.LogError ("Така пошта використовуєьться, виберіть іншу");
 				isFieldOk &= ~IsValidate.email;
 			} else if (Equals (www.text, "0")) {
-				Debug.Log ("User email OK !");
+				consoleText.text = "User email OK !";
+				//Debug.Log ("User email OK !");
 				isFieldOk |= IsValidate.email;
 			}
 			SINPanelActivBtn (btnSIN);
@@ -127,4 +189,23 @@ public class CheckInDB : MonoBehaviour
 		yield return null;
 	}
 
+	//Check pass
+	public void EndEditPass (InputField targetField)
+	{        
+		if (ValidateField (targetField)) {
+			isFieldOk |= IsValidate.pass;
+			SUPPanelActivBtn (btnSUP);
+		}
+	}
+
+	public void EndEditRePass ()
+	{
+		InputField pass = GameObject.Find ("IF_PassUP").GetComponent<InputField> ();
+		InputField rePass = GameObject.Find ("IF_RePassUP").GetComponent<InputField> ();
+
+		if (ValidateField (pass, rePass)) {
+			isFieldOk |= IsValidate.rePass;
+			SUPPanelActivBtn (btnSUP);
+		}
+	}
 }
